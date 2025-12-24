@@ -17,7 +17,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  // final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -27,7 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    // _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -49,9 +49,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => OTPConfirmationScreen(
-            email: _emailController.text,
-          ),
+          builder: (context) =>
+              OTPConfirmationScreen(email: _emailController.text),
         ),
       );
     }
@@ -68,10 +67,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Constants.getTextColor(isDark),
-          ),
+          icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -155,20 +151,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     color: Constants.getTextSecondaryColor(isDark),
                   ),
                 ),
-                const SizedBox(height: 32),
-                // Name field
-                CustomInputField(
-                  isDark: isDark,
-                  label: 'Full Name',
-                  hint: 'Enter your full name',
-                  controller: _nameController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
-                ),
+                // const SizedBox(height: 32),
+                // // Name field
+                // CustomInputField(
+                //   isDark: isDark,
+                //   label: 'Full Name',
+                //   hint: 'Enter your full name',
+                //   controller: _nameController,
+                //   validator: (value) {
+                //     if (value == null || value.isEmpty) {
+                //       return 'Please enter your name';
+                //     }
+                //     return null;
+                //   },
+                // ),
                 const SizedBox(height: 20),
                 // Email field
                 CustomInputField(
@@ -197,7 +193,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _passwordController,
                   sufixWidget: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Constants.getTextSecondaryColor(isDark),
                     ),
                     onPressed: () {
@@ -226,7 +224,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: _confirmPasswordController,
                   sufixWidget: IconButton(
                     icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Constants.getTextSecondaryColor(isDark),
                     ),
                     onPressed: () {
@@ -302,9 +302,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Divider(
-                        color: Constants.getBorderColor(isDark),
-                      ),
+                      child: Divider(color: Constants.getBorderColor(isDark)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -317,9 +315,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                     Expanded(
-                      child: Divider(
-                        color: Constants.getBorderColor(isDark),
-                      ),
+                      child: Divider(color: Constants.getBorderColor(isDark)),
                     ),
                   ],
                 ),
@@ -376,4 +372,3 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 }
-
