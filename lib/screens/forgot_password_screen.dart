@@ -1,3 +1,4 @@
+import 'package:calmzone/providers/otp_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
@@ -23,18 +24,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _handleResetPassword() {
+  void _handleResetPassword() async {
     if (_formKey.currentState!.validate()) {
-      // Navigate to OTP screen for password reset
-      Navigator.push(
+      final controller = Provider.of<EmailOtpController>(
         context,
-        MaterialPageRoute(
-          builder: (context) => OTPConfirmationScreen(
-            email: _emailController.text,
-            isPasswordReset: true,
-          ),
-        ),
+        listen: false,
       );
+      bool check = await controller.sendOtpToEmail(
+        email: _emailController.text,
+      );
+      if (check) {
+        // Navigate to OTP screen for password reset
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPConfirmationScreen(
+              email: _emailController.text,
+              isPasswordReset: true,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(controller.error.toString()),
+            backgroundColor: Constants.errorColor,
+          ),
+        );
+      }
     }
   }
 
@@ -49,10 +66,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Constants.getTextColor(isDark),
-          ),
+          icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -160,4 +174,3 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 }
-

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "722467314682",
+    "project_id": "calmzone-7c377",
+    "storage_bucket": "calmzone-7c377.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:722467314682:android:07196727a2a327127d2243",
+        "android_client_info": {
+          "package_name": "com.example.calmzone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "722467314682-5qdua565voasma20g50athhh1lcj466i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3GRMC0F9TqzPaHhQg55igLtc75BlNx3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "722467314682-5qdua565voasma20g50athhh1lcj466i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

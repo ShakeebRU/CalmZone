@@ -1,3 +1,6 @@
+import 'package:calmzone/providers/login_controller.dart';
+import 'package:calmzone/providers/otp_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
@@ -34,7 +37,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _handleSignUp() {
+  void _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
       if (!_agreeToTerms) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -45,14 +48,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
         );
         return;
       }
-      // Navigate to OTP screen
-      Navigator.push(
+      final controller = Provider.of<LoginController>(context, listen: false);
+      bool check = await controller.registerUser(
         context,
-        MaterialPageRoute(
-          builder: (context) =>
-              OTPConfirmationScreen(email: _emailController.text),
-        ),
+        name: '',
+        email: _emailController.text,
+        password: _passwordController.text,
       );
+
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+      if (check) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registered successful!'),
+            backgroundColor: Constants.successColor,
+          ),
+        );
+        await Provider.of<EmailOtpController>(
+          context,
+          listen: false,
+        ).sendOtp(user: _auth.currentUser!, email: _emailController.text);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                OTPConfirmationScreen(email: _emailController.text),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(controller.errorMessage.toString()),
+            backgroundColor: Constants.errorColor,
+          ),
+        );
+      }
+      // sendOtpEmail
+
+      // Navigate to OTP screen
     }
   }
 

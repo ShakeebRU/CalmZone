@@ -1,3 +1,4 @@
+import 'package:calmzone/providers/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
@@ -9,10 +10,7 @@ import 'package:provider/provider.dart';
 class NewPasswordScreen extends StatefulWidget {
   final String email;
 
-  const NewPasswordScreen({
-    super.key,
-    required this.email,
-  });
+  const NewPasswordScreen({super.key, required this.email});
 
   @override
   State<NewPasswordScreen> createState() => _NewPasswordScreenState();
@@ -55,6 +53,13 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         setState(() {
           _isLoading = false;
         });
+        Provider.of<LoginController>(
+          context,
+          listen: false,
+        ).updatePasswordAfterOtp(
+          email: widget.email,
+          newPassword: _newPasswordController.text,
+        );
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -101,10 +106,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Constants.getTextColor(isDark),
-          ),
+          icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -162,7 +164,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   controller: _newPasswordController,
                   sufixWidget: IconButton(
                     icon: Icon(
-                      _obscureNewPassword ? Icons.visibility_off : Icons.visibility,
+                      _obscureNewPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Constants.getTextSecondaryColor(isDark),
                     ),
                     onPressed: () {
@@ -179,7 +183,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       return 'Password must be at least 8 characters';
                     }
                     // Check for at least one uppercase, one lowercase, and one number
-                    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(value)) {
+                    if (!RegExp(
+                      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)',
+                    ).hasMatch(value)) {
                       return 'Password must contain uppercase, lowercase, and number';
                     }
                     return null;
@@ -195,7 +201,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   controller: _confirmPasswordController,
                   sufixWidget: IconButton(
                     icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Constants.getTextSecondaryColor(isDark),
                     ),
                     onPressed: () {
@@ -272,7 +280,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
-                    disabledBackgroundColor: Constants.accentColor.withOpacity(0.6),
+                    disabledBackgroundColor: Constants.accentColor.withOpacity(
+                      0.6,
+                    ),
                   ),
                   child: _isLoading
                       ? SizedBox(
@@ -280,7 +290,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : Text(
@@ -297,7 +309,9 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
                       (route) => false,
                     );
                   },
@@ -345,4 +359,3 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     );
   }
 }
-

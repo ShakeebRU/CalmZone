@@ -1,3 +1,4 @@
+import 'package:calmzone/providers/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
@@ -35,25 +36,40 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.setLoggedIn(true);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login successful!'),
-            backgroundColor: Constants.successColor,
-          ),
+        final controller = Provider.of<LoginController>(context, listen: false);
+        bool check = await controller.loginUser(
+          email: _emailController.text,
+          password: _passwordController.text,
         );
-        
-        // Navigate based on first-time status
-        if (userProvider.isFirstTime) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
+        if (check) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login successful!'),
+              backgroundColor: Constants.successColor,
+            ),
           );
+          // Navigate based on first-time status
+          if (userProvider.isFirstTime) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PersonalDataScreen(),
+              ),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardScreen()),
+            );
+          }
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(controller.errorMessage.toString()),
+              backgroundColor: Constants.errorColor,
+            ),
           );
         }
       }
@@ -196,7 +212,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   sufixWidget: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Constants.getTextSecondaryColor(isDark),
                     ),
                     onPressed: () {
@@ -264,9 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Divider(
-                        color: Constants.getBorderColor(isDark),
-                      ),
+                      child: Divider(color: Constants.getBorderColor(isDark)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -279,9 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Expanded(
-                      child: Divider(
-                        color: Constants.getBorderColor(isDark),
-                      ),
+                      child: Divider(color: Constants.getBorderColor(isDark)),
                     ),
                   ],
                 ),
@@ -338,4 +352,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

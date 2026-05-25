@@ -1,3 +1,5 @@
+import 'package:calmzone/providers/otp_controller.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
@@ -26,10 +28,7 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
     6,
     (index) => TextEditingController(),
   );
-  final List<FocusNode> _focusNodes = List.generate(
-    6,
-    (index) => FocusNode(),
-  );
+  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
   int _resendTimer = 60;
   bool _canResend = false;
 
@@ -65,11 +64,16 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
     });
   }
 
-  void _handleOTPVerification() {
+  void _handleOTPVerification() async {
     String otp = _otpControllers.map((controller) => controller.text).join();
     if (otp.length == 6) {
       // Handle OTP verification logic here
       if (widget.isPasswordReset) {
+        final FirebaseAuth _auth = FirebaseAuth.instance;
+        await Provider.of<EmailOtpController>(
+          context,
+          listen: false,
+        ).verifyOtp(uid: _auth.currentUser!.uid, enteredOtp: otp);
         // Navigate to new password screen
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -84,14 +88,25 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => NewPasswordScreen(
-                  email: widget.email,
-                ),
+                builder: (context) => NewPasswordScreen(email: widget.email),
               ),
             );
           }
         });
       } else {
+        final FirebaseAuth _auth = FirebaseAuth.instance;
+        await Provider.of<EmailOtpController>(
+          context,
+          listen: false,
+        ).verifyOtp(uid: _auth.currentUser!.uid, enteredOtp: otp);
+        // Navigate to new password screen
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('OTP verified successfully!'),
+            backgroundColor: Constants.successColor,
+            duration: const Duration(seconds: 1),
+          ),
+        );
         // Navigate to home or show success
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -115,12 +130,20 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
     }
   }
 
-  void _handleResendOTP() {
+  void _handleResendOTP() async {
     if (_canResend) {
       setState(() {
         _resendTimer = 60;
         _canResend = false;
       });
+
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+
+      await Provider.of<EmailOtpController>(
+        context,
+        listen: false,
+      ).sendOtp(email: widget.email, user: _auth.currentUser!);
+
       _startResendTimer();
       // Resend OTP logic here
       ScaffoldMessenger.of(context).showSnackBar(
@@ -151,10 +174,7 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Constants.getTextColor(isDark),
-          ),
+          icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -315,4 +335,3 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
     );
   }
 }
-
