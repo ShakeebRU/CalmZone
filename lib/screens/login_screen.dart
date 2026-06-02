@@ -50,20 +50,21 @@ class _LoginScreenState extends State<LoginScreen> {
               backgroundColor: Constants.successColor,
             ),
           );
+          await controller.checkUserProfileAndNavigate(context);
           // Navigate based on first-time status
-          if (userProvider.isFirstTime) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const PersonalDataScreen(),
-              ),
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          }
+          // if (userProvider.isFirstTime) {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => const PersonalDataScreen(),
+          //     ),
+          //   );
+          // } else {
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          // );
+          // }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

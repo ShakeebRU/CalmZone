@@ -1,10 +1,13 @@
 import 'package:calmzone/constants/otp_services.dart';
 import 'package:calmzone/providers/otp_controller.dart';
+import 'package:calmzone/screens/personal_data_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+
+import '../screens/dashboard_screen.dart';
 
 class LoginController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -274,6 +277,90 @@ class LoginController extends ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// =========================
+  /// UPDATE USER PROFILE
+  /// =========================
+  Future<bool> updateUserProfile({
+    required String name,
+    required int age,
+    required String gender,
+    required double weight,
+    required double height,
+  }) async {
+    try {
+      _setLoading(true);
+      _setError(null);
+
+      if (_currentUser == null) {
+        _setError('User not logged in');
+        return false;
+      }
+
+      await _firestore.collection('users').doc(_currentUser!.uid).update({
+        'name': name.trim(),
+        'age': age,
+        'gender': gender,
+        'weight': weight,
+        'height': height,
+        'profileCompleted': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// =========================
+  /// CHECK PROFILE COMPLETION
+  /// =========================
+  Future<void> checkUserProfileAndNavigate(BuildContext context) async {
+    try {
+      if (_currentUser == null) {
+        return;
+      }
+
+      final doc = await _firestore
+          .collection('users')
+          .doc(_currentUser!.uid)
+          .get();
+
+      if (!doc.exists) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const PersonalDataScreen()),
+          (route) => false,
+        );
+        return;
+      }
+
+      final data = doc.data();
+
+      final String? name = data?['name'];
+
+      /// If name is null or empty
+      if (name == null || name.trim().isEmpty) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const PersonalDataScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      _setError(e.toString());
     }
   }
 

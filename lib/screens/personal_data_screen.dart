@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../constants/constants.dart';
 import '../Components/input_field_widget.dart';
+import '../providers/login_controller.dart';
 import '../providers/theme_provider.dart';
 import '../providers/user_provider.dart';
 import 'dashboard_screen.dart';
@@ -24,6 +25,37 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
   int _currentStep = 0;
 
   final List<String> _genders = ['Male', 'Female', 'Other'];
+
+  Future<void> _saveData() async {
+    final loginController = Provider.of<LoginController>(
+      context,
+      listen: false,
+    );
+
+    final success = await loginController.updateUserProfile(
+      name: _nameController.text.trim(),
+      age: int.parse(_ageController.text.trim()),
+      gender: _selectedGender!,
+      weight: double.parse(_weightController.text.trim()),
+      height: double.parse(_heightController.text.trim()),
+    );
+
+    if (success && mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        (route) => false,
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            loginController.errorMessage ?? 'Failed to save profile',
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -62,23 +94,23 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     }
   }
 
-  Future<void> _saveData() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    await userProvider.savePersonalData(
-      name: _nameController.text.trim(),
-      age: int.parse(_ageController.text.trim()),
-      gender: _selectedGender!,
-      weight: double.parse(_weightController.text.trim()),
-      height: double.parse(_heightController.text.trim()),
-    );
+  // Future<void> _saveDataLocal() async {
+  //   final userProvider = Provider.of<UserProvider>(context, listen: false);
+  //   await userProvider.savePersonalData(
+  //     name: _nameController.text.trim(),
+  //     age: int.parse(_ageController.text.trim()),
+  //     gender: _selectedGender!,
+  //     weight: double.parse(_weightController.text.trim()),
+  //     height: double.parse(_heightController.text.trim()),
+  //   );
 
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      );
-    }
-  }
+  //   if (mounted) {
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const DashboardScreen()),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -124,8 +156,8 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                         _currentStep == 0
                             ? 'Tell us about yourself'
                             : _currentStep == 1
-                                ? 'Personal Information'
-                                : 'Physical Details',
+                            ? 'Personal Information'
+                            : 'Physical Details',
                         style: GoogleFonts.outfit(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -137,8 +169,8 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                         _currentStep == 0
                             ? 'We need some basic information to personalize your experience'
                             : _currentStep == 1
-                                ? 'Help us understand you better'
-                                : 'Let\'s complete your profile',
+                            ? 'Help us understand you better'
+                            : 'Let\'s complete your profile',
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           color: Constants.getTextSecondaryColor(isDark),
@@ -203,7 +235,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                                 decoration: BoxDecoration(
                                   color: _selectedGender == gender
                                       ? Constants.accentColor.withOpacity(0.1)
-                                      : Constants.getInputBackgroundColor(isDark),
+                                      : Constants.getInputBackgroundColor(
+                                          isDark,
+                                        ),
                                   border: Border.all(
                                     color: _selectedGender == gender
                                         ? Constants.accentColor
@@ -220,7 +254,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                                           : Icons.radio_button_unchecked,
                                       color: _selectedGender == gender
                                           ? Constants.accentColor
-                                          : Constants.getTextSecondaryColor(isDark),
+                                          : Constants.getTextSecondaryColor(
+                                              isDark,
+                                            ),
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
@@ -305,7 +341,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                         onPressed: _handleBack,
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: Constants.getBorderColor(isDark)),
+                          side: BorderSide(
+                            color: Constants.getBorderColor(isDark),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -351,4 +389,3 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 }
-

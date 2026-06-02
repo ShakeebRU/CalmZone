@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../constants/constants.dart';
+import '../providers/login_controller.dart';
 import '../providers/theme_provider.dart';
 import '../providers/user_provider.dart';
 import 'login_screen.dart';
@@ -29,47 +30,48 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 2000),
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+      ),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
 
     _animationController.forward();
 
     // Navigate based on login status and first-time status
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 3), () async {
       if (mounted) {
-        _navigateToNextScreen();
+        await _navigateToNextScreen();
       }
     });
   }
 
-  void _navigateToNextScreen() {
+  Future<void> _navigateToNextScreen() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
+
     if (userProvider.isLoggedIn) {
-      if (userProvider.isFirstTime) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-        );
-      }
+      final controller1 = Provider.of<LoginController>(context, listen: false);
+
+      await controller1.checkUserProfileAndNavigate(context);
+      // if (userProvider.isFirstTime) {
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
+      //   );
+      // } else {
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      //   );
+      // }
     } else {
       Navigator.pushReplacement(
         context,
@@ -195,4 +197,3 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-

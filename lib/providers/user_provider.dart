@@ -48,7 +48,7 @@ class UserProvider with ChangeNotifier {
     await prefs.setDouble('user_weight', weight);
     await prefs.setDouble('user_height', height);
     await prefs.setBool('is_first_time', false);
-    
+
     _name = name;
     _age = age;
     _gender = gender;
@@ -72,4 +72,3 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-
