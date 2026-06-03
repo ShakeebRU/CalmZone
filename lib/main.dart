@@ -1,5 +1,6 @@
 import 'package:calmzone/providers/login_controller.dart';
 import 'package:calmzone/providers/otp_controller.dart';
+import 'package:calmzone/providers/plans_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => PlansProvider()),
         ChangeNotifierProvider(create: (_) => EmailOtpController()),
         ChangeNotifierProvider(create: (_) => LoginController()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),

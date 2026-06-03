@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_advanced_drawer/flutter_advanced_drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/constants.dart';
+import '../models/exercise_model.dart';
+import '../models/meal_plan_model.dart';
+import '../providers/plans_controller.dart';
 import '../providers/theme_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/subscription_provider.dart';
@@ -27,6 +31,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PlansProvider>().loadAllPlans();
+    });
   }
 
   @override
@@ -276,11 +288,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: color,
-              ),
+              child: Icon(icon, size: 32, color: color),
             ),
             const SizedBox(height: 12),
             Text(
@@ -376,7 +384,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 30),
               // Subscription Status Card
-              _buildSubscriptionStatusCard(context, subscriptionProvider, isDark),
+              _buildSubscriptionStatusCard(
+                context,
+                subscriptionProvider,
+                isDark,
+              ),
               const SizedBox(height: 30),
               // Notification Settings
               _buildDrawerItem(
@@ -384,7 +396,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'Notification Settings',
                 Icons.notifications_active_outlined,
                 () {
-                  _showNotificationSettingsDialog(context, isDark, notificationProvider);
+                  _showNotificationSettingsDialog(
+                    context,
+                    isDark,
+                    notificationProvider,
+                  );
                 },
                 isDark,
               ),
@@ -395,7 +411,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'Subscription Plans',
                 Icons.card_membership,
                 () {
-                  _showSubscriptionPlansDialog(context, subscriptionProvider, isDark);
+                  _showSubscriptionPlansDialog(
+                    context,
+                    subscriptionProvider,
+                    isDark,
+                  );
                 },
                 isDark,
               ),
@@ -412,15 +432,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 },
                 isDark,
               ),
-              _buildDrawerItem(
-                context,
-                'Rate Us',
-                Icons.star_outline,
-                () {
-                  _rateApp(context);
-                },
-                isDark,
-              ),
+              _buildDrawerItem(context, 'Rate Us', Icons.star_outline, () {
+                _rateApp(context);
+              }, isDark),
               _buildDrawerItem(
                 context,
                 'Permissions',
@@ -465,7 +479,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         statusText = 'Trial: $daysLeft days left';
         statusColor = Constants.accentColor;
         statusIcon = Icons.star;
-      } else if (subscriptionProvider.subscriptionType == SubscriptionType.monthly) {
+      } else if (subscriptionProvider.subscriptionType ==
+          SubscriptionType.monthly) {
         statusText = 'Monthly Plan Active';
         statusColor = Constants.successColor;
         statusIcon = Icons.check_circle;
@@ -485,10 +500,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       decoration: BoxDecoration(
         color: Constants.getSurfaceColor(isDark),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: statusColor.withOpacity(0.3),
-          width: 1,
-        ),
+        border: Border.all(color: statusColor.withOpacity(0.3), width: 1),
       ),
       child: Row(
         children: [
@@ -498,11 +510,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: statusColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              statusIcon,
-              color: statusColor,
-              size: 20,
-            ),
+            child: Icon(statusIcon, color: statusColor, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -588,9 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         content: TextField(
           maxLines: 5,
-          style: GoogleFonts.outfit(
-            color: Constants.getTextColor(isDark),
-          ),
+          style: GoogleFonts.outfit(color: Constants.getTextColor(isDark)),
           decoration: InputDecoration(
             hintText: 'Share your thoughts...',
             hintStyle: GoogleFonts.outfit(
@@ -600,9 +606,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             fillColor: Constants.getInputBackgroundColor(isDark),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: Constants.getBorderColor(isDark),
-              ),
+              borderSide: BorderSide(color: Constants.getBorderColor(isDark)),
             ),
           ),
         ),
@@ -640,13 +644,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _rateApp(BuildContext context) async {
-    const url = 'https://play.google.com/store/apps/details?id=com.calmzone.app';
+    const url =
+        'https://play.google.com/store/apps/details?id=com.calmzone.app';
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open app store')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open app store')));
     }
   }
 
@@ -677,10 +682,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Constants.accentColor,
             ),
-            child: Text(
-              'OK',
-              style: GoogleFonts.outfit(color: Colors.white),
-            ),
+            child: Text('OK', style: GoogleFonts.outfit(color: Colors.white)),
           ),
         ],
       ),
@@ -714,7 +716,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.water_drop,
                 color: Colors.blue,
                 isOn: notificationProvider.notifications['water']!,
-                onChanged: (value) => notificationProvider.toggleNotification('water', value),
+                onChanged: (value) =>
+                    notificationProvider.toggleNotification('water', value),
                 isDark: isDark,
                 trailingText: 'Hourly',
                 editable: false,
@@ -723,7 +726,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildNotificationToggleRow(
                 context: context,
                 title: 'Meals',
-                subtitle: 'Fixed times: Breakfast 8:00, Lunch 13:00, Dinner 19:00',
+                subtitle:
+                    'Fixed times: Breakfast 8:00, Lunch 13:00, Dinner 19:00',
                 icon: Icons.restaurant,
                 color: Colors.orange,
                 isOn: notificationProvider.notifications['breakfast']!,
@@ -744,13 +748,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.fitness_center,
                 color: Colors.red,
                 isOn: notificationProvider.notifications['workout']!,
-                onChanged: (value) => notificationProvider.toggleNotification('workout', value),
+                onChanged: (value) =>
+                    notificationProvider.toggleNotification('workout', value),
                 isDark: isDark,
-                trailingText: _formatTime(notificationProvider.notificationTimes['workout']!),
+                trailingText: _formatTime(
+                  notificationProvider.notificationTimes['workout']!,
+                ),
                 onTapTrailing: () async {
                   final picked = await showTimePicker(
                     context: context,
-                    initialTime: _parseTime(notificationProvider.notificationTimes['workout']!),
+                    initialTime: _parseTime(
+                      notificationProvider.notificationTimes['workout']!,
+                    ),
                   );
                   if (picked != null) {
                     notificationProvider.setNotificationTime(
@@ -768,13 +777,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.self_improvement,
                 color: Colors.purple,
                 isOn: notificationProvider.notifications['meditation']!,
-                onChanged: (value) => notificationProvider.toggleNotification('meditation', value),
+                onChanged: (value) => notificationProvider.toggleNotification(
+                  'meditation',
+                  value,
+                ),
                 isDark: isDark,
-                trailingText: _formatTime(notificationProvider.notificationTimes['meditation']!),
+                trailingText: _formatTime(
+                  notificationProvider.notificationTimes['meditation']!,
+                ),
                 onTapTrailing: () async {
                   final picked = await showTimePicker(
                     context: context,
-                    initialTime: _parseTime(notificationProvider.notificationTimes['meditation']!),
+                    initialTime: _parseTime(
+                      notificationProvider.notificationTimes['meditation']!,
+                    ),
                   );
                   if (picked != null) {
                     notificationProvider.setNotificationTime(
@@ -860,14 +876,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             InkWell(
               onTap: editable ? onTapTrailing : null,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
                     Text(
                       trailingText,
                       style: GoogleFonts.outfit(
                         fontSize: 12,
-                        color: editable ? Constants.accentColor : Constants.getTextSecondaryColor(isDark),
+                        color: editable
+                            ? Constants.accentColor
+                            : Constants.getTextSecondaryColor(isDark),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -917,11 +938,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle,
-            color: Constants.successColor,
-            size: 20,
-          ),
+          Icon(Icons.check_circle, color: Constants.successColor, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -974,7 +991,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   '7-Day Free Trial',
                   'Try all premium features',
                   'FREE',
-                  subscriptionProvider.subscriptionType == SubscriptionType.trial,
+                  subscriptionProvider.subscriptionType ==
+                      SubscriptionType.trial,
                   () {
                     subscriptionProvider.startTrial();
                     Navigator.pop(context);
@@ -992,7 +1010,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'Monthly Plan',
                 'Billed monthly, cancel anytime',
                 '\$9.99/month',
-                subscriptionProvider.subscriptionType == SubscriptionType.monthly,
+                subscriptionProvider.subscriptionType ==
+                    SubscriptionType.monthly,
                 () {
                   subscriptionProvider.subscribe(SubscriptionType.monthly);
                   Navigator.pop(context);
@@ -1010,7 +1029,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'Yearly Plan',
                 'Save 30%, best value',
                 '\$83.99/year',
-                subscriptionProvider.subscriptionType == SubscriptionType.yearly,
+                subscriptionProvider.subscriptionType ==
+                    SubscriptionType.yearly,
                 () {
                   subscriptionProvider.subscribe(SubscriptionType.yearly);
                   Navigator.pop(context);
@@ -1059,14 +1079,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           color: isActive
               ? Constants.accentColor.withOpacity(0.1)
               : isHighlighted
-                  ? Constants.accentColor.withOpacity(0.05)
-                  : Constants.getInputBackgroundColor(isDark),
+              ? Constants.accentColor.withOpacity(0.05)
+              : Constants.getInputBackgroundColor(isDark),
           border: Border.all(
             color: isActive
                 ? Constants.accentColor
                 : isHighlighted
-                    ? Constants.accentColor.withOpacity(0.5)
-                    : Constants.getBorderColor(isDark),
+                ? Constants.accentColor.withOpacity(0.5)
+                : Constants.getBorderColor(isDark),
             width: isActive || isHighlighted ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -1188,4 +1208,3 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 }
-
