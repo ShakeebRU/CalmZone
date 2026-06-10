@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
                 onBackground: Constants.lightTextColor,
                 onSurface: Constants.lightTextColor,
               ),
-              scaffoldBackgroundColor: Constants.lightBackgroundColor,
+              scaffoldBackgroundColor: Constants.lightBackgroundColor, 
               textTheme: GoogleFonts.outfitTextTheme(),
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
