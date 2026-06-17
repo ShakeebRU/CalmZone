@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         final controller = Provider.of<LoginController>(context, listen: false);
         bool check = await controller.loginUser(
+          context,
           email: _emailController.text,
           password: _passwordController.text,
         );

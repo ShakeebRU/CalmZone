@@ -1,13 +1,16 @@
 import 'package:calmzone/constants/otp_services.dart';
 import 'package:calmzone/providers/otp_controller.dart';
+import 'package:calmzone/providers/user_provider.dart';
 import 'package:calmzone/screens/personal_data_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/dashboard_screen.dart';
+import '../screens/first_test_screen.dart';
 
 class LoginController extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -24,6 +27,8 @@ class LoginController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   User? get currentUser => _currentUser;
+
+  void setUser(User user) => _currentUser = user;
 
   // =========================
   // LOADING
@@ -44,7 +49,8 @@ class LoginController extends ChangeNotifier {
   // =========================
   // EMAIL LOGIN
   // =========================
-  Future<bool> loginUser({
+  Future<bool> loginUser(
+    BuildContext context, {
     required String email,
     required String password,
   }) async {
@@ -56,8 +62,30 @@ class LoginController extends ChangeNotifier {
         email: email.trim(),
         password: password.trim(),
       );
+      if (_currentUser != null) {
+        final doc = await _firestore
+            .collection('users')
+            .doc(_currentUser!.uid)
+            .get();
 
+        if (doc.exists) {
+          final data = doc.data()!;
+          final cont = Provider.of<UserProvider>(context, listen: false);
+          await cont.savePersonalData(
+            name: data['name'],
+            age: data['age'],
+            gender: data['gender'],
+            weight: data['weight'],
+            height: data['height'],
+          );
+          await cont.setLoggedIn(true);
+          print("Name: ${data['name']}");
+          print("Age: ${data['age']}");
+          print("Gender: ${data['gender']}");
+        }
+      }
       _currentUser = credential.user;
+      print("user : ${_currentUser?.displayName}");
       notifyListeners();
 
       return true;
@@ -353,6 +381,15 @@ class LoginController extends ChangeNotifier {
           (route) => false,
         );
       } else {
+        // Navigator.pushAndRemoveUntil(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (context) {
+        //       return CalmZoneTestScreen();
+        //     },
+        //   ),
+        //   (route) => false,
+        // );
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -374,7 +411,7 @@ class LoginController extends ChangeNotifier {
       _currentUser = user;
       notifyListeners();
       return true;
-    }
+    } else {}
 
     return false;
   }
@@ -387,6 +424,7 @@ class LoginController extends ChangeNotifier {
     await _auth.signOut();
 
     _currentUser = null;
+    await FirebaseAuth.instance.signOut();
     notifyListeners();
   }
 }

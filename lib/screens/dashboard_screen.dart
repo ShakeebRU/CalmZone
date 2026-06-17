@@ -1,3 +1,5 @@
+import 'package:calmzone/screens/first_test_screen.dart';
+import 'package:calmzone/screens/profile_view_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -390,6 +392,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 isDark,
               ),
               const SizedBox(height: 30),
+              _buildDrawerItem(context, 'Profile', Icons.person, () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return ProfileViewScreen();
+                    },
+                  ),
+                );
+              }, isDark),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 20),
               // Notification Settings
               _buildDrawerItem(
                 context,

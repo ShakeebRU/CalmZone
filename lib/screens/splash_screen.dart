@@ -1,3 +1,4 @@
+import 'package:calmzone/screens/AuthGate.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -55,29 +56,33 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateToNextScreen() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const AuthGate()),
+    );
+    // final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    if (userProvider.isLoggedIn) {
-      final controller1 = Provider.of<LoginController>(context, listen: false);
-
-      await controller1.checkUserProfileAndNavigate(context);
-      // if (userProvider.isFirstTime) {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
-      //   );
-      // } else {
-      //   Navigator.pushReplacement(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => const DashboardScreen()),
-      //   );
-      // }
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    }
+    // if (userProvider.isLoggedIn) {
+    //   final controller1 = Provider.of<LoginController>(context, listen: false);
+    //   await controller1.checkUserLoggedIn();
+    //   await controller1.checkUserProfileAndNavigate(context);
+    //   // if (userProvider.isFirstTime) {
+    //   //   Navigator.pushReplacement(
+    //   //     context,
+    //   //     MaterialPageRoute(builder: (context) => const PersonalDataScreen()),
+    //   //   );
+    //   // } else {
+    //   //   Navigator.pushReplacement(
+    //   //     context,
+    //   //     MaterialPageRoute(builder: (context) => const DashboardScreen()),
+    //   //   );
+    //   // }
+    // } else {
+    //   Navigator.pushReplacement(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => const LoginScreen()),
+    //   );
+    // }
   }
 
   @override

@@ -69,11 +69,11 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
     if (otp.length == 6) {
       // Handle OTP verification logic here
       if (widget.isPasswordReset) {
-        final FirebaseAuth _auth = FirebaseAuth.instance;
+        // final FirebaseAuth _auth = FirebaseAuth.instance;
         await Provider.of<EmailOtpController>(
           context,
           listen: false,
-        ).verifyOtp(uid: _auth.currentUser!.uid, enteredOtp: otp);
+        ).verifyOtp(email: widget.email, enteredOtp: otp);
         // Navigate to new password screen
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -83,14 +83,36 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
           ),
         );
         // Navigate to new password screen
-        Future.delayed(const Duration(milliseconds: 800), () {
+        Future.delayed(const Duration(milliseconds: 800), () async {
           if (mounted) {
-            Navigator.push(
+            final error = await Provider.of<EmailOtpController>(
               context,
-              MaterialPageRoute(
-                builder: (context) => NewPasswordScreen(email: widget.email),
-              ),
-            );
+              listen: false,
+            ).sendResetPasswordEmail(widget.email);
+
+            if (error == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Password reset email sent. Check your inbox.'),
+                ),
+              );
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+              );
+            } else {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(error)));
+            }
+
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => NewPasswordScreen(email: widget.email),
+            //   ),
+            // );
           }
         });
       } else {
@@ -98,7 +120,7 @@ class _OTPConfirmationScreenState extends State<OTPConfirmationScreen> {
         await Provider.of<EmailOtpController>(
           context,
           listen: false,
-        ).verifyOtp(uid: _auth.currentUser!.uid, enteredOtp: otp);
+        ).verifyOtp(email: widget.email, enteredOtp: otp);
         // Navigate to new password screen
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

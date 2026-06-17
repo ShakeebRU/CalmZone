@@ -1443,41 +1443,293 @@ class _PlansScreenState extends State<PlansScreen>
     );
   }
 
-  Widget _buildMealCard(MealPlan meal, bool isDark) {
+  // Widget _buildMealCard(MealPlan meal, bool isDark) {
+  //   return Container(
+  //     margin: const EdgeInsets.only(bottom: 12),
+  //     padding: const EdgeInsets.all(12),
+  //     decoration: BoxDecoration(
+  //       color: Constants.getSurfaceColor(isDark),
+  //       borderRadius: BorderRadius.circular(12),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Image.network(
+  //           meal.imageUrl,
+  //           width: 70,
+  //           height: 70,
+  //           fit: BoxFit.cover,
+  //         ),
+  //         const SizedBox(width: 12),
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 meal.name,
+  //                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+  //               ),
+  //               Text(
+  //                 meal.description,
+  //                 maxLines: 2,
+  //                 overflow: TextOverflow.ellipsis,
+  //               ),
+  //               Text("${meal.nutrition.calories} cal"),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+  void _showMealDetails(MealPlan meal, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.6,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, controller) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Constants.getBackgroundColor(isDark),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+              ),
+              child: SingleChildScrollView(
+                controller: controller,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade400,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        meal.imageUrl,
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      meal.name,
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      meal.description,
+                      style: GoogleFonts.outfit(fontSize: 15),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        _infoChip(
+                          Icons.timer,
+                          "${meal.prepTime + meal.cookTime} min",
+                        ),
+                        const SizedBox(width: 10),
+                        _infoChip(Icons.restaurant_menu, meal.difficulty),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Text(
+                      "Nutrition",
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _nutritionCard(
+                          "Calories",
+                          "${meal.nutrition.calories}",
+                        ),
+                        _nutritionCard("Protein", "${meal.nutrition.protein}g"),
+                        _nutritionCard("Carbs", "${meal.nutrition.carbs}g"),
+                        _nutritionCard("Fat", "${meal.nutrition.fat}g"),
+                        _nutritionCard("Fiber", "${meal.nutrition.fiber}g"),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Text(
+                      "Ingredients",
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    ...meal.ingredients.map(
+                      (ingredient) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              size: 18,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(ingredient)),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Text(
+                      "Recipe",
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Text(meal.recipe, style: GoogleFonts.outfit(height: 1.6)),
+
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _infoChip(IconData icon, String text) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Constants.getSurfaceColor(isDark),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.green.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Image.network(
-            meal.imageUrl,
-            width: 70,
-            height: 70,
-            fit: BoxFit.cover,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  meal.name,
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  meal.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text("${meal.nutrition.calories} cal"),
-              ],
-            ),
-          ),
+          Icon(icon, size: 18, color: Colors.green),
+          const SizedBox(width: 6),
+          Text(text),
         ],
+      ),
+    );
+  }
+
+  Widget _nutritionCard(String title, String value) {
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.withOpacity(0.1),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(title),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMealCard(MealPlan meal, bool isDark) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _showMealDetails(meal, isDark),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Constants.getSurfaceColor(isDark),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                meal.imageUrl,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    meal.name,
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    meal.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "${meal.nutrition.calories} cal",
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+          ],
+        ),
       ),
     );
   }
