@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
 import '../constants/mental_test_data.dart';
+import '../services/test_service.dart';
 
 class CalmZoneTestScreen extends StatefulWidget {
   const CalmZoneTestScreen({super.key});
@@ -59,11 +60,74 @@ class _CalmZoneTestScreenState extends State<CalmZoneTestScreen>
     controller.forward();
   }
 
-  double getPercent() {
-    int max = mentalTestData.length * 3;
-    int total = answers.fold(0, (a, b) => a + (b ?? 0));
-    return (total / max) * 100;
+  // ============================================================
+  // COMBINED SCORING — PERCENTAGE OUT OF 100
+  // ============================================================
+
+  // Max possible: PHQ-9 = 27, GAD-7 = 21, Total = 48
+
+  int phqMaxScore = 27;
+  int gadMaxScore = 21;
+  int totalMaxScore = 48; // 27 + 21
+
+  Map<String, dynamic> calculateMentalHealthResult(List<int> selectedScores) {
+    // selectedScores: 16 values, index 0–8 = PHQ-9, index 9–15 = GAD-7
+
+    int phq9Score = 0;
+    for (int i = 0; i <= 8; i++) {
+      phq9Score += selectedScores[i];
+    }
+
+    int gad7Score = 0;
+    for (int i = 9; i <= 15; i++) {
+      gad7Score += selectedScores[i];
+    }
+
+    int combinedScore = phq9Score + gad7Score;
+
+    // Percentage out of 100
+    double percentage = (combinedScore / totalMaxScore) * 100;
+    double roundedPercentage = double.parse(percentage.toStringAsFixed(1));
+
+    // Severity label based on percentage
+    String severity;
+    int severityColor;
+
+    if (roundedPercentage <= 16) {
+      severity = "Minimal";
+      severityColor = 0xFF4CAF50; // Green
+    } else if (roundedPercentage <= 37) {
+      severity = "Mild";
+      severityColor = 0xFFFFEB3B; // Yellow
+    } else if (roundedPercentage <= 58) {
+      severity = "Moderate";
+      severityColor = 0xFFFF9800; // Orange
+    } else if (roundedPercentage <= 79) {
+      severity = "Moderately Severe";
+      severityColor = 0xFFFF5722; // Deep Orange
+    } else {
+      severity = "Severe";
+      severityColor = 0xFFF44336; // Red
+    }
+
+    return {
+      "phq9Score": phq9Score, // internal
+      "gad7Score": gad7Score, // internal
+      "combinedScore": combinedScore, // internal
+      "totalMaxScore": totalMaxScore, // 48
+      "percentage": roundedPercentage, // e.g. 65.0
+      "severity": severity, // e.g. "Moderate"
+      "color": severityColor, // Flutter Color hex
+      "displayResult":
+          "$roundedPercentage% — $severity", // e.g. "65.0% — Moderate"
+    };
   }
+
+  // double getPercent() {
+  //   int max = mentalTestData.length * 3;
+  //   int total = answers.fold(0, (a, b) => a + (b ?? 0));
+  //   return (total / max) * 100;
+  // }
 
   String getLevel(double p) {
     if (p <= 30) return "Low (Beginner)";
@@ -72,7 +136,15 @@ class _CalmZoneTestScreenState extends State<CalmZoneTestScreen>
   }
 
   void _showResult() {
-    double percent = getPercent();
+    final result = calculateMentalHealthResult(
+      answers.map((e) => e ?? 0).toList(),
+    );
+
+    double percent = result["percentage"] as double;
+    String severity = result["severity"] as String;
+    int phqScore = result["phq9Score"] as int;
+    int gadScore = result["gad7Score"] as int;
+    int combinedScore = result["combinedScore"] as int;
 
     showDialog(
       context: context,
@@ -114,7 +186,17 @@ class _CalmZoneTestScreenState extends State<CalmZoneTestScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: Constants.accentColor,
             ),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              await TestStorage.saveResult(
+                percentageValue: percent,
+                severityValue: severity,
+                phqScore: phqScore,
+                gadScore: gadScore,
+                combinedScore: combinedScore,
+              );
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
             child: const Text("Done"),
           ),
         ],

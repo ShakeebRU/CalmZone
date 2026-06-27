@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../constants/constants.dart';
 import '../providers/theme_provider.dart';
+import '../services/test_service.dart';
+import 'first_test_screen.dart';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -16,11 +18,44 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [
     ChatMessage(
-      text: 'Hello! I\'m your mental health assistant. How can I help you today?',
+      text:
+          'Hello! I\'m your mental health assistant. How can I help you today?',
       isUser: false,
       timestamp: DateTime.now(),
     ),
   ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _checkMentalTest();
+
+    loadResult();
+  }
+
+  Future<void> _checkMentalTest() async {
+    final shouldTake = await TestStorage.shouldTakeTest();
+
+    if (!shouldTake) return;
+
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CalmZoneTestScreen()),
+    );
+  }
+
+  double mentalPercentage = 0;
+  String severity = "";
+  Future<void> loadResult() async {
+    mentalPercentage = await TestStorage.getPercentage();
+    severity = await TestStorage.getSeverity();
+
+    setState(() {});
+  }
 
   @override
   void dispose() {
@@ -51,7 +86,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         setState(() {
           _messages.add(
             ChatMessage(
-              text: 'Thank you for sharing. I understand you might be feeling this way. Would you like to talk more about it?',
+              text:
+                  'Thank you for sharing. I understand you might be feeling this way. Would you like to talk more about it?',
               isUser: false,
               timestamp: DateTime.now(),
             ),
@@ -85,12 +121,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         backgroundColor: Constants.getSurfaceColor(isDark),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Constants.getTextColor(isDark),
-          ),
+          icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Text(
+              "Level\n$severity",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                color: Constants.getTextColor(isDark),
+              ),
+            ),
+          ),
+        ],
         title: Row(
           children: [
             Container(
@@ -99,10 +145,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [
-                    Constants.accentColor,
-                    Constants.secondaryColor2,
-                  ],
+                  colors: [Constants.accentColor, Constants.secondaryColor2],
                 ),
               ),
               child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
@@ -253,4 +296,3 @@ class ChatMessage {
     required this.timestamp,
   });
 }
-
