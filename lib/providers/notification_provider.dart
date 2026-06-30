@@ -51,12 +51,11 @@ class NotificationProvider with ChangeNotifier {
   Future<void> toggleNotification(String key, bool value) async {
     _notifications[key] = value;
 
-    notifyListeners();
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notification_$key', value);
 
     await NotificationScheduler.instance.scheduleAll(this);
+    notifyListeners();
   }
 
   // Future<void> toggleNotification(String key, bool value) async {
@@ -70,12 +69,11 @@ class NotificationProvider with ChangeNotifier {
 
     _notificationTimes[key] = time;
 
-    notifyListeners();
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('notification_time_$key', time);
 
     await NotificationScheduler.instance.scheduleAll(this);
+    notifyListeners();
   }
   // Future<void> setNotificationTime(String key, String time) async {
   //   if (!_isTimeCustomizable(key)) return;

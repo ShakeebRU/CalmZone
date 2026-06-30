@@ -731,8 +731,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.water_drop,
                 color: Colors.blue,
                 isOn: notificationProvider.notifications['water']!,
-                onChanged: (value) =>
-                    notificationProvider.toggleNotification('water', value),
+                onChanged: (value) async => await notificationProvider
+                    .toggleNotification('water', value),
                 isDark: isDark,
                 trailingText: 'Hourly',
                 editable: false,
@@ -746,10 +746,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 icon: Icons.restaurant,
                 color: Colors.orange,
                 isOn: notificationProvider.notifications['breakfast']!,
-                onChanged: (value) {
-                  notificationProvider.toggleNotification('breakfast', value);
-                  notificationProvider.toggleNotification('lunch', value);
-                  notificationProvider.toggleNotification('dinner', value);
+                onChanged: (value) async {
+                  await notificationProvider.toggleNotification(
+                    'breakfast',
+                    value,
+                  );
+                  await notificationProvider.toggleNotification('lunch', value);
+                  await notificationProvider.toggleNotification(
+                    'dinner',
+                    value,
+                  );
                 },
                 isDark: isDark,
                 trailingText: 'Fixed',
@@ -777,7 +783,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                   if (picked != null) {
-                    notificationProvider.setNotificationTime(
+                    await notificationProvider.setNotificationTime(
                       'workout',
                       _formatTime24(picked),
                     );
@@ -808,7 +814,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                   if (picked != null) {
-                    notificationProvider.setNotificationTime(
+                    await notificationProvider.setNotificationTime(
                       'meditation',
                       _formatTime24(picked),
                     );
