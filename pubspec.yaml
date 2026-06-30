@@ -81,6 +81,10 @@ flutter:
     - assets/
     - assets/images/
     - assets/icons/
+    - assets/chat/chatbot_model.tflite
+    - assets/chat/intents.json
+    - assets/chat/label_encoder.json
+    - assets/chat/tokenizer.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

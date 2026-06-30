@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:tflite_flutter/tflite_flutter.dart';
 import '../constants/constants.dart';
 import '../providers/theme_provider.dart';
 import '../services/test_service.dart';
@@ -25,6 +29,138 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     ),
   ];
 
+  int NUM_CLASSES = 110;
+  late Interpreter interpreter;
+
+  Future<void> loadModel() async {
+    print("Loading model...");
+    try {
+      interpreter = await Interpreter.fromAsset(
+        'assets/chat/chatbot_model.tflite',
+      );
+
+      print("Input shape: ${interpreter.getInputTensor(0).shape}");
+      print("Output shape: ${interpreter.getOutputTensor(0).shape}");
+      print("Model loaded successfully");
+    } catch (e, s) {
+      print(e);
+      print(s);
+    }
+  }
+
+  Map<String, int> tokenizer = {};
+  List<dynamic> labels = [];
+
+  Future<void> loadLabels() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/chat/label_encoder.json',
+    );
+
+    labels = json.decode(jsonString);
+  }
+
+  Map intents = {};
+
+  Future<void> loadIntents() async {
+    final jsonString = await rootBundle.loadString('assets/chat/intents.json');
+
+    intents = json.decode(jsonString);
+  }
+
+  Future<void> loadTokenizer() async {
+    final jsonString = await rootBundle.loadString(
+      'assets/chat/tokenizer.json',
+    );
+
+    final jsonData = json.decode(jsonString);
+
+    tokenizer = Map<String, int>.from(jsonData["word_index"]);
+  }
+
+  int MAX_LENGTH = 40;
+  List<int> textToSequence(String text) {
+    text = text.toLowerCase();
+
+    List<String> words = text.split(RegExp(r"\s+"));
+
+    List<int> sequence = [];
+
+    for (String word in words) {
+      sequence.add(tokenizer[word] ?? 0);
+    }
+
+    while (sequence.length < MAX_LENGTH) {
+      sequence.add(0);
+    }
+
+    if (sequence.length > MAX_LENGTH) {
+      sequence = sequence.sublist(0, MAX_LENGTH);
+    }
+
+    return sequence;
+  }
+
+  Future<String> sendMessage(String message) async {
+    // 1. Clean the text
+    message = message.toLowerCase();
+
+    // 2. Convert to sequence using the tokenizer vocabulary
+    List<int> sequence = textToSequence(message);
+
+    // 3. Pad to length 20
+    while (sequence.length < 20) {
+      sequence.add(0);
+    }
+    if (sequence.length > 20) {
+      sequence = sequence.sublist(0, 20);
+    }
+
+    // 4. Prepare input
+    var input = [sequence];
+
+    // 5. Prepare output (must match model)
+    var output = List.generate(1, (_) => List.filled(NUM_CLASSES, 0.0));
+
+    // 6. Run inference
+    interpreter.run(input, output);
+
+    // 7. Find predicted class
+    int predictedIndex = output[0].indexOf(
+      output[0].reduce((a, b) => a > b ? a : b),
+    );
+
+    // 8. Convert index -> tag
+    String tag = labels[predictedIndex];
+
+    // 9. Get a response for that tag
+    return getResponse(tag);
+  }
+
+  String getResponse(String tag) {
+    final intent = intents["intents"].firstWhere(
+      (item) => item["tag"] == tag,
+      orElse: () => null,
+    );
+
+    if (intent == null) {
+      return "Sorry, I didn't understand.";
+    }
+
+    List responses = intent["responses"];
+
+    return responses[Random().nextInt(responses.length)];
+  }
+
+  Future<void> initialize() async {
+    await loadModel();
+
+    await loadTokenizer();
+
+    await loadLabels();
+
+    await loadIntents();
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -33,6 +169,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _checkMentalTest();
 
     loadResult();
+
+    initialize();
   }
 
   Future<void> _checkMentalTest() async {
@@ -64,7 +202,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
     setState(() {
@@ -77,25 +215,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       );
     });
 
-    _messageController.clear();
-    _scrollToBottom();
+    String userMessage = _messageController.text;
 
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          _messages.add(
-            ChatMessage(
-              text:
-                  'Thank you for sharing. I understand you might be feeling this way. Would you like to talk more about it?',
-              isUser: false,
-              timestamp: DateTime.now(),
-            ),
-          );
-        });
-        _scrollToBottom();
-      }
+    String botReply = await sendMessage(userMessage);
+    _messageController.clear();
+
+    setState(() {
+      _messages.add(
+        ChatMessage(text: botReply, isUser: false, timestamp: DateTime.now()),
+      );
     });
+
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
