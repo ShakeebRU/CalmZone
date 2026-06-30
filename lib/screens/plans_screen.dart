@@ -1443,44 +1443,6 @@ class _PlansScreenState extends State<PlansScreen>
     );
   }
 
-  // Widget _buildMealCard(MealPlan meal, bool isDark) {
-  //   return Container(
-  //     margin: const EdgeInsets.only(bottom: 12),
-  //     padding: const EdgeInsets.all(12),
-  //     decoration: BoxDecoration(
-  //       color: Constants.getSurfaceColor(isDark),
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     child: Row(
-  //       children: [
-  //         Image.network(
-  //           meal.imageUrl,
-  //           width: 70,
-  //           height: 70,
-  //           fit: BoxFit.cover,
-  //         ),
-  //         const SizedBox(width: 12),
-  //         Expanded(
-  //           child: Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Text(
-  //                 meal.name,
-  //                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-  //               ),
-  //               Text(
-  //                 meal.description,
-  //                 maxLines: 2,
-  //                 overflow: TextOverflow.ellipsis,
-  //               ),
-  //               Text("${meal.nutrition.calories} cal"),
-  //             ],
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
   void _showMealDetails(MealPlan meal, bool isDark) {
     showModalBottomSheet(
       context: context,

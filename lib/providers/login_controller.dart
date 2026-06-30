@@ -242,24 +242,6 @@ class LoginController extends ChangeNotifier {
     });
   }
 
-  // // =========================
-  // // RESET PASSWORD
-  // // =========================
-  // Future<bool> resetPassword(String email) async {
-  //   try {
-  //     _setLoading(true);
-  //     _setError(null);
-
-  //     await _auth.sendPasswordResetEmail(email: email.trim());
-
-  //     return true;
-  //   } on FirebaseAuthException catch (e) {
-  //     _setError(e.message);
-  //     return false;
-  //   } finally {
-  //     _setLoading(false);
-  //   }
-  // }
   /// =========================
   /// UPDATE PASSWORD AFTER OTP
   /// =========================

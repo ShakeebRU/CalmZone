@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/notification_scheduler.dart';
 
 class NotificationProvider with ChangeNotifier {
   // Notification enable/disable state
@@ -34,33 +35,57 @@ class NotificationProvider with ChangeNotifier {
   Future<void> _loadNotificationSettings() async {
     final prefs = await SharedPreferences.getInstance();
     for (final key in _notifications.keys) {
-      _notifications[key] = prefs.getBool('notification_$key') ?? _notifications[key]!;
+      _notifications[key] =
+          prefs.getBool('notification_$key') ?? _notifications[key]!;
       // Only restore customizable times; fixed ones keep defaults
       if (_isTimeCustomizable(key)) {
         _notificationTimes[key] =
-            prefs.getString('notification_time_$key') ?? _notificationTimes[key]!;
+            prefs.getString('notification_time_$key') ??
+            _notificationTimes[key]!;
       }
     }
     notifyListeners();
+    await NotificationScheduler.instance.scheduleAll(this);
   }
 
   Future<void> toggleNotification(String key, bool value) async {
     _notifications[key] = value;
+
     notifyListeners();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notification_$key', value);
+
+    await NotificationScheduler.instance.scheduleAll(this);
   }
 
+  // Future<void> toggleNotification(String key, bool value) async {
+  //   _notifications[key] = value;
+  //   notifyListeners();
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setBool('notification_$key', value);
+  // }
   Future<void> setNotificationTime(String key, String time) async {
     if (!_isTimeCustomizable(key)) return;
+
     _notificationTimes[key] = time;
+
     notifyListeners();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('notification_time_$key', time);
+
+    await NotificationScheduler.instance.scheduleAll(this);
   }
+  // Future<void> setNotificationTime(String key, String time) async {
+  //   if (!_isTimeCustomizable(key)) return;
+  //   _notificationTimes[key] = time;
+  //   notifyListeners();
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString('notification_time_$key', time);
+  // }
 
   bool _isTimeCustomizable(String key) {
     return key == 'workout' || key == 'meditation' || key == 'snacks';
   }
 }
-

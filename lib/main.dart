@@ -12,9 +12,11 @@ import 'providers/notification_provider.dart';
 import 'screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'services/notifications_services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.instance.initialize();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
@@ -51,7 +53,7 @@ class MyApp extends StatelessWidget {
                 onBackground: Constants.lightTextColor,
                 onSurface: Constants.lightTextColor,
               ),
-              scaffoldBackgroundColor: Constants.lightBackgroundColor, 
+              scaffoldBackgroundColor: Constants.lightBackgroundColor,
               textTheme: GoogleFonts.outfitTextTheme(),
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
