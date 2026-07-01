@@ -4,11 +4,13 @@ import 'package:calmzone/providers/user_provider.dart';
 import 'package:calmzone/screens/personal_data_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/exercise_model.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/first_test_screen.dart';
 
@@ -408,5 +410,135 @@ class LoginController extends ChangeNotifier {
     _currentUser = null;
     await FirebaseAuth.instance.signOut();
     notifyListeners();
+  }
+
+  Future<bool> saveCompletedWorkout(ExercisePlan plan) async {
+    try {
+      _setLoading(true);
+      // final _currentUser = _auth.currentUser;
+      if (_currentUser == null) {
+        _setError("User not logged in");
+        return false;
+      }
+
+      await _firestore
+          .collection("users")
+          .doc(_currentUser!.uid)
+          .collection("completed_workouts")
+          .add({
+            "title": plan.title,
+            "duration": plan.duration,
+            "difficulty": plan.difficulty,
+            "imageUrl": plan.imageUrl,
+            "instructions": plan.instructions,
+            "exerciseId": plan.id,
+            "completedAt": FieldValue.serverTimestamp(),
+            "date": DateTime.now().toIso8601String().substring(0, 10),
+            "month": DateTime.now().month,
+            "year": DateTime.now().year,
+            "day": DateTime.now().day,
+          });
+
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<FlSpot>> getWeeklyProgress() async {
+    if (_currentUser == null) return [];
+
+    final now = DateTime.now();
+
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+
+    final endOfWeek = startOfWeek.add(const Duration(days: 7));
+
+    final snapshot = await _firestore
+        .collection("users")
+        .doc(_currentUser!.uid)
+        .collection("completed_workouts")
+        .where(
+          "completedAt",
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfWeek),
+        )
+        .where("completedAt", isLessThan: Timestamp.fromDate(endOfWeek))
+        .get();
+
+    List<int> counts = List.filled(7, 0);
+
+    for (var doc in snapshot.docs) {
+      final ts = doc["completedAt"] as Timestamp;
+
+      final date = ts.toDate();
+
+      counts[date.weekday - 1]++;
+    }
+
+    List<FlSpot> spots = [];
+
+    for (int i = 0; i < counts.length; i++) {
+      spots.add(FlSpot(i.toDouble(), counts[i].toDouble()));
+    }
+
+    return spots;
+  }
+
+  Future<List<FlSpot>> getMonthlyProgress() async {
+    if (_currentUser == null) return [];
+
+    final now = DateTime.now();
+
+    final start = DateTime(now.year, now.month, 1);
+
+    final end = DateTime(now.year, now.month + 1, 1);
+
+    final snapshot = await _firestore
+        .collection("users")
+        .doc(_currentUser!.uid)
+        .collection("completed_workouts")
+        .where("completedAt", isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where("completedAt", isLessThan: Timestamp.fromDate(end))
+        .get();
+
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+
+    List<int> counts = List.filled(daysInMonth, 0);
+
+    for (var doc in snapshot.docs) {
+      final date = (doc["completedAt"] as Timestamp).toDate();
+
+      counts[date.day - 1]++;
+    }
+
+    return List.generate(
+      daysInMonth,
+      (index) => FlSpot(index.toDouble(), counts[index].toDouble()),
+    );
+  }
+
+  Future<bool> isExerciseCompletedToday(String exerciseId) async {
+    print(
+      "Checking if exercise $exerciseId is completed today for user ${_currentUser?.uid}",
+    );
+    if (_currentUser == null) return false;
+
+    final now = DateTime.now();
+
+    final start = DateTime(now.year, now.month, now.day);
+
+    final end = start.add(const Duration(days: 1));
+
+    final snapshot = await _firestore
+        .collection("users")
+        .doc(_currentUser!.uid)
+        .collection("completed_workouts")
+        .where("exerciseId", isEqualTo: exerciseId)
+        .get();
+    print("Snapshot docs: ${snapshot.docs.length}");
+    return snapshot.docs.isNotEmpty;
   }
 }

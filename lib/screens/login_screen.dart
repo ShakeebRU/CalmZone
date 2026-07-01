@@ -67,12 +67,14 @@ class _LoginScreenState extends State<LoginScreen> {
           // );
           // }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(controller.errorMessage.toString()),
-              backgroundColor: Constants.errorColor,
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(controller.errorMessage.toString()),
+                backgroundColor: Constants.errorColor,
+              ),
+            );
+          }
         }
       }
     }

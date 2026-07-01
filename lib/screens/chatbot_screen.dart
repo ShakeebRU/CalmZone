@@ -165,12 +165,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    handleLoad();
+  }
 
-    _checkMentalTest();
+  Future<void> handleLoad() async {
+    await _checkMentalTest();
 
-    loadResult();
+    await loadResult();
 
-    initialize();
+    await initialize();
   }
 
   Future<void> _checkMentalTest() async {

@@ -3,23 +3,32 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/constants.dart';
 
+enum ChartPeriod { week, month }
+
 class MonthlyProgressChart extends StatelessWidget {
   final bool isDark;
+  final List<FlSpot> spots;
+  final ChartPeriod period;
 
-  const MonthlyProgressChart({super.key, required this.isDark});
+  const MonthlyProgressChart({
+    super.key,
+    required this.isDark,
+    required this.spots,
+    required this.period,
+  });
 
   // Sample data for the last 7 days
-  List<FlSpot> get _spots {
-    return [
-      const FlSpot(0, 3),
-      const FlSpot(1, 4),
-      const FlSpot(2, 5),
-      const FlSpot(3, 3.5),
-      const FlSpot(4, 6),
-      const FlSpot(5, 5.5),
-      const FlSpot(6, 7),
-    ];
-  }
+  // List<FlSpot> get _spots {
+  //   return [
+  //     const FlSpot(0, 3),
+  //     const FlSpot(1, 4),
+  //     const FlSpot(2, 5),
+  //     const FlSpot(3, 3.5),
+  //     const FlSpot(4, 6),
+  //     const FlSpot(5, 5.5),
+  //     const FlSpot(6, 7),
+  //   ];
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -50,23 +59,74 @@ class MonthlyProgressChart extends StatelessWidget {
               reservedSize: 30,
               interval: 1,
               getTitlesWidget: (value, meta) {
-                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                if (value.toInt() >= 0 && value.toInt() < days.length) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      days[value.toInt()],
-                      style: GoogleFonts.outfit(
-                        fontSize: 10,
-                        color: Constants.getTextSecondaryColor(isDark),
+                if (period == ChartPeriod.week) {
+                  const days = [
+                    'Mon',
+                    'Tue',
+                    'Wed',
+                    'Thu',
+                    'Fri',
+                    'Sat',
+                    'Sun',
+                  ];
+
+                  if (value.toInt() >= 0 && value.toInt() < days.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        days[value.toInt()],
+                        style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          color: Constants.getTextSecondaryColor(isDark),
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
+                } else {
+                  // Show weeks of the month
+                  const weeks = ['W1', 'W2', 'W3', 'W4'];
+
+                  if (value.toInt() >= 0 && value.toInt() < weeks.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        weeks[value.toInt()],
+                        style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          color: Constants.getTextSecondaryColor(isDark),
+                        ),
+                      ),
+                    );
+                  }
                 }
-                return const Text('');
+
+                return const SizedBox();
               },
             ),
           ),
+          // bottomTitles: AxisTitles(
+          //   sideTitles: SideTitles(
+          //     showTitles: true,
+          //     reservedSize: 30,
+          //     interval: 1,
+          //     getTitlesWidget: (value, meta) {
+          //       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+          //       if (value.toInt() >= 0 && value.toInt() < days.length) {
+          //         return Padding(
+          //           padding: const EdgeInsets.only(top: 8.0),
+          //           child: Text(
+          //             days[value.toInt()],
+          //             style: GoogleFonts.outfit(
+          //               fontSize: 10,
+          //               color: Constants.getTextSecondaryColor(isDark),
+          //             ),
+          //           ),
+          //         );
+          //       }
+          //       return const Text('');
+          //     },
+          //   ),
+          // ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -101,7 +161,7 @@ class MonthlyProgressChart extends StatelessWidget {
         maxY: 8,
         lineBarsData: [
           LineChartBarData(
-            spots: _spots,
+            spots: spots,
             isCurved: true,
             color: Constants.accentColor,
             barWidth: 3,
@@ -117,4 +177,3 @@ class MonthlyProgressChart extends StatelessWidget {
     );
   }
 }
-

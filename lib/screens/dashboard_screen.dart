@@ -1,6 +1,8 @@
+import 'package:calmzone/providers/login_controller.dart';
 import 'package:calmzone/screens/first_test_screen.dart';
 import 'package:calmzone/screens/profile_view_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart' show FlSpot;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +32,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final _advancedDrawerController = AdvancedDrawerController();
-
+  String selectedPeriod = "This Month";
   void _handleMenuButtonPressed() {
     _advancedDrawerController.showDrawer();
   }
@@ -130,41 +132,193 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Monthly Progress',
+                          selectedPeriod,
                           style: GoogleFonts.outfit(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Constants.getTextColor(isDark),
                           ),
                         ),
+
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
                             color: Constants.accentColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text(
-                            'This Month',
-                            style: GoogleFonts.outfit(
-                              fontSize: 12,
-                              color: Constants.accentColor,
-                              fontWeight: FontWeight.w600,
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedPeriod,
+                              icon: Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Constants.accentColor,
+                                size: 18,
+                              ),
+                              dropdownColor: Constants.getSurfaceColor(isDark),
+                              borderRadius: BorderRadius.circular(12),
+                              style: GoogleFonts.outfit(
+                                fontSize: 12,
+                                color: Constants.accentColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: "This Week",
+                                  child: Text("This Week"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "This Month",
+                                  child: Text("This Month"),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value == null) return;
+
+                                setState(() {
+                                  selectedPeriod = value;
+                                });
+                              },
                             ),
                           ),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 20),
+
                     SizedBox(
                       height: 200,
-                      child: MonthlyProgressChart(isDark: isDark),
+                      child: FutureBuilder<List<FlSpot>>(
+                        future: selectedPeriod == "This Week"
+                            ? context
+                                  .read<LoginController>()
+                                  .getWeeklyProgress()
+                            : context
+                                  .read<LoginController>()
+                                  .getMonthlyProgress(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          if (snapshot.hasError) {
+                            return MonthlyProgressChart(
+                              isDark: isDark,
+                              spots: const [],
+                              period: selectedPeriod == "This Week"
+                                  ? ChartPeriod.week
+                                  : ChartPeriod.month,
+                            );
+                          }
+
+                          return MonthlyProgressChart(
+                            isDark: isDark,
+                            spots: snapshot.data ?? const [],
+                            period: selectedPeriod == "This Week"
+                                ? ChartPeriod.week
+                                : ChartPeriod.month,
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
+              // Container(
+              //   padding: const EdgeInsets.all(20),
+              //   decoration: BoxDecoration(
+              //     color: Constants.getSurfaceColor(isDark),
+              //     borderRadius: BorderRadius.circular(16),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: Colors.black.withOpacity(0.05),
+              //         blurRadius: 10,
+              //         offset: const Offset(0, 2),
+              //       ),
+              //     ],
+              //   ),
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       Row(
+              //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //         children: [
+              //           Text(
+              //             'Monthly Progress',
+              //             style: GoogleFonts.outfit(
+              //               fontSize: 20,
+              //               fontWeight: FontWeight.bold,
+              //               color: Constants.getTextColor(isDark),
+              //             ),
+              //           ),
+              //           Container(
+              //             padding: const EdgeInsets.symmetric(
+              //               horizontal: 12,
+              //               vertical: 6,
+              //             ),
+              //             decoration: BoxDecoration(
+              //               color: Constants.accentColor.withOpacity(0.1),
+              //               borderRadius: BorderRadius.circular(20),
+              //             ),
+              //             child: Text(
+              //               'This Month',
+              //               style: GoogleFonts.outfit(
+              //                 fontSize: 12,
+              //                 color: Constants.accentColor,
+              //                 fontWeight: FontWeight.w600,
+              //               ),
+              //             ),
+              //           ),
+              //         ],
+              //       ),
+              //       const SizedBox(height: 20),
+              //       SizedBox(
+              //         height: 200,
+              //         child: FutureBuilder<List<FlSpot>>(
+              //           future: context
+              //               .read<LoginController>()
+              //               .getWeeklyProgress(),
+              //           builder: (context, snapshot) {
+              //             if (snapshot.connectionState ==
+              //                 ConnectionState.waiting) {
+              //               return const Center(
+              //                 child: CircularProgressIndicator(),
+              //               );
+              //             }
+
+              //             if (snapshot.hasError) {
+              //               return MonthlyProgressChart(
+              //                 isDark: isDark,
+              //                 spots: [],
+              //               );
+              //             }
+
+              //             if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              //               return MonthlyProgressChart(
+              //                 isDark: isDark,
+              //                 spots: [],
+              //               );
+              //             }
+
+              //             return MonthlyProgressChart(
+              //               isDark: isDark,
+              //               spots: snapshot.data!,
+              //             );
+              //           },
+              //         ),
+              //       ),
+              //       // SizedBox(
+              //       //   height: 200,
+              //       //   child: MonthlyProgressChart(
+              //       //     spots: context.watch<LoginController>().getWeeklyProgress(),
+              //       //     isDark: isDark),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
               const SizedBox(height: 24),
               // Menu Buttons Grid
               Text(

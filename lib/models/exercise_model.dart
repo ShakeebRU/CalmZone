@@ -7,8 +7,8 @@ class ExercisePlan {
   final String imageUrl;
   final String videoUrl;
   final String type;
+  final String exerciseId;
   final String iconName;
-
   final List<String> instructions; // ✅ NEW
 
   ExercisePlan({
@@ -20,6 +20,7 @@ class ExercisePlan {
     required this.imageUrl,
     required this.videoUrl,
     required this.type,
+    required this.exerciseId,
     required this.iconName,
     required this.instructions,
   });
@@ -33,6 +34,7 @@ class ExercisePlan {
       difficulty: map['difficulty'] ?? 'Beginner',
       imageUrl: map['imageUrl'] ?? '',
       videoUrl: map['videoUrl'] ?? '',
+      exerciseId: map['exerciseId'] ?? '',
       type: map['type'] ?? '',
       iconName: map['iconName'] ?? '',
 
@@ -50,6 +52,7 @@ class ExercisePlan {
       'imageUrl': imageUrl,
       'videoUrl': videoUrl,
       'type': type,
+      'exerciseId': exerciseId,
       'iconName': iconName,
 
       'instructions': instructions, // ✅
