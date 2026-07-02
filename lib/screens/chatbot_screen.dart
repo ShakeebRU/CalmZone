@@ -249,138 +249,144 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
 
-    return Scaffold(
-      backgroundColor: Constants.getBackgroundColor(isDark),
-      appBar: AppBar(
-        backgroundColor: Constants.getSurfaceColor(isDark),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Text(
-              "Level\n$severity",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.bold,
-                color: Constants.getTextColor(isDark),
-              ),
-            ),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Constants.getBackgroundColor(isDark),
+        appBar: AppBar(
+          backgroundColor: Constants.getSurfaceColor(isDark),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Constants.getTextColor(isDark)),
+            onPressed: () => Navigator.pop(context),
           ),
-        ],
-        title: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Constants.accentColor, Constants.secondaryColor2],
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(
+                "Level\n$severity",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  color: Constants.getTextColor(isDark),
                 ),
               ),
-              child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
             ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'AI Assistant',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Constants.getTextColor(isDark),
+          ],
+          title: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Constants.accentColor, Constants.secondaryColor2],
                   ),
                 ),
-                Text(
-                  'Online',
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    color: Constants.successColor,
-                  ),
+                child: const Icon(
+                  Icons.smart_toy,
+                  color: Colors.white,
+                  size: 20,
                 ),
-              ],
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI Assistant',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Constants.getTextColor(isDark),
+                    ),
+                  ),
+                  Text(
+                    'Online',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: Constants.successColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  return _buildMessageBubble(_messages[index], isDark);
+                },
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Constants.getSurfaceColor(isDark),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      style: GoogleFonts.outfit(
+                        color: Constants.getTextColor(isDark),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Type your message...',
+                        hintStyle: GoogleFonts.outfit(
+                          color: Constants.getTextSecondaryColor(isDark),
+                        ),
+                        filled: true,
+                        fillColor: Constants.getInputBackgroundColor(isDark),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: Constants.getBorderColor(isDark),
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Constants.accentColor,
+                          Constants.secondaryColor2,
+                        ],
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.send, color: Colors.white),
+                      onPressed: _sendMessage,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _buildMessageBubble(_messages[index], isDark);
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Constants.getSurfaceColor(isDark),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    style: GoogleFonts.outfit(
-                      color: Constants.getTextColor(isDark),
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Type your message...',
-                      hintStyle: GoogleFonts.outfit(
-                        color: Constants.getTextSecondaryColor(isDark),
-                      ),
-                      filled: true,
-                      fillColor: Constants.getInputBackgroundColor(isDark),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(
-                          color: Constants.getBorderColor(isDark),
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        Constants.accentColor,
-                        Constants.secondaryColor2,
-                      ],
-                    ),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _sendMessage,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

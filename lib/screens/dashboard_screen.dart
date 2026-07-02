@@ -86,13 +86,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: Constants.getTextSecondaryColor(isDark),
                 ),
               ),
-              Text(
-                userProvider.name ?? 'User',
-                style: GoogleFonts.outfit(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Constants.getTextColor(isDark),
-                ),
+              Consumer<UserProvider>(
+                builder: (context, userProvider, child) {
+                  return Text(
+                    userProvider.name ?? 'User',
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Constants.getTextColor(isDark),
+                    ),
+                  );
+                },
               ),
             ],
           ),

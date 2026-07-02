@@ -73,6 +73,7 @@ class LoginController extends ChangeNotifier {
         if (doc.exists) {
           final data = doc.data()!;
           final cont = Provider.of<UserProvider>(context, listen: false);
+
           await cont.savePersonalData(
             name: data['name'],
             age: data['age'],
@@ -403,9 +404,11 @@ class LoginController extends ChangeNotifier {
   // =========================
   // LOGOUT
   // =========================
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     await _googleSignIn.signOut();
     await _auth.signOut();
+    final cont = Provider.of<UserProvider>(context, listen: false);
+    await cont.logout();
 
     _currentUser = null;
     await FirebaseAuth.instance.signOut();
